@@ -46,12 +46,12 @@ export async function execute(interaction: CommandInteraction) {
         path.join(__dirname, "files", option + ".opus"),
         { inlineVolume: true }
     )
-    if (interaction.options.get("volume") === null) {
+    if (interaction.options.get("volume") != null) {
         resource.volume?.setVolume(
             <number>interaction.options.get("volume")?.value! * 0.01
         )
     } else {
-        resource.volume?.setVolume(0.5)
+        resource.volume?.setVolume(0.75)
     }
     const player = createAudioPlayer({
         behaviors: {
