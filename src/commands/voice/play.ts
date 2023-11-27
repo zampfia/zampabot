@@ -50,8 +50,6 @@ export async function execute(interaction: CommandInteraction) {
         resource.volume?.setVolume(
             <number>interaction.options.get("volume")?.value! * 0.01
         )
-    } else {
-        resource.volume?.setVolume(0.75)
     }
     const player = createAudioPlayer({
         behaviors: {
