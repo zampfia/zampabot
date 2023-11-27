@@ -5,6 +5,7 @@ import * as esilia from "./util/esilia"
 import * as join from "./voice/join"
 import * as leave from "./voice/leave"
 import * as play from "./voice/play"
+import * as stop from "./voice/stop"
 
 export const commands = {
     burnhome,
@@ -14,4 +15,5 @@ export const commands = {
     join,
     leave,
     play,
+    stop,
 }
