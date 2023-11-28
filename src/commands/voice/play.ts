@@ -40,12 +40,20 @@ export async function execute(interaction: CommandInteraction) {
             ephemeral: true,
         })
     }
+
     await interaction.deferReply({ ephemeral: true })
     const option = interaction.options.get("audiofile")?.value!
-    const resource = createAudioResource(
-        path.join(__dirname, "files", option + ".opus"),
-        { inlineVolume: true }
-    )
+    let resource
+    try {
+        resource = createAudioResource(
+            path.join(__dirname, "files", option + ".opus"),
+            { inlineVolume: true }
+        )
+    } catch (e) {
+        return interaction.editReply(
+            `Impossibile trovare l'audio **${option}**`
+        )
+    }
     if (interaction.options.get("volume") != null) {
         resource.volume?.setVolume(
             <number>interaction.options.get("volume")?.value! * 0.01
