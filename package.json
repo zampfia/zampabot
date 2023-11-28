@@ -7,12 +7,14 @@
         "dev": "tsx watch src/index.ts",
         "start": "node dist/index.js",
         "build": "tsup src/index.ts --minify",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "install": "better-npm-audit audit"
     },
     "author": "gdar463",
     "license": "GPL-3.0",
     "dependencies": {
         "@discordjs/voice": "^0.16.1",
+        "better-npm-audit": "^3.7.3",
         "discord.js": "^14.14.1",
         "dotenv": "^16.3.1",
         "ffmpeg-static": "^5.2.0",
