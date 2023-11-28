@@ -3,6 +3,7 @@ import * as ping from "./random/ping"
 import * as pong from "./random/pong"
 import * as esilia from "./util/esilia"
 import * as gtts from "./voice/gtts"
+import * as gttsl from "./voice/gttsl"
 import * as join from "./voice/join"
 import * as leave from "./voice/leave"
 import * as play from "./voice/play"
@@ -14,6 +15,7 @@ export const commands = {
     pong,
     esilia,
     gtts,
+    gttsl,
     join,
     leave,
     play,
