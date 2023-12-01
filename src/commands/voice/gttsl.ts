@@ -8,10 +8,9 @@ import {
 import { CommandInteraction, SlashCommandBuilder } from "discord.js"
 import * as gtts from "google-tts-api"
 import { tmpNameSync, dirSync } from "tmp"
-import { Readable } from "stream"
 import Ffmpeg, { setFfmpegPath } from "fluent-ffmpeg"
 import ffmpegPath from "ffmpeg-static"
-import fs from "fs/promises"
+import fs from "fs"
 import getAudioDurationInSeconds from "get-audio-duration"
 
 setFfmpegPath(ffmpegPath!)
@@ -112,13 +111,16 @@ export async function execute(interaction: CommandInteraction) {
         lang: language,
         slow: slow,
     })
+    await interaction.editReply("Merging audio...")
     let ffmpeg = Ffmpeg()
-    base64s.map(async (element) => {
+    base64s.map((element) => {
         const path = tmpNameSync()
-        await fs.writeFile(
-            path,
-            Readable.from(Buffer.from(element["base64"], "base64"))
-        )
+        const buffer = Buffer.from(element["base64"], "base64")
+        const uint8arr = new Uint8Array(buffer.byteLength)
+
+        buffer.copy(uint8arr, 0, 0, buffer.byteLength)
+        const v = new DataView(uint8arr.buffer)
+        fs.writeFileSync(path, v)
         ffmpeg = ffmpeg.addInput(path)
     })
     await interaction.editReply("Saving audio...")
