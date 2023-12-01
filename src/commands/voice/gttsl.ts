@@ -87,7 +87,7 @@ export async function execute(interaction: CommandInteraction) {
         connection?.state.status === VoiceConnectionStatus.Destroyed ||
         connection?.state.status === VoiceConnectionStatus.Disconnected
     ) {
-        return interaction.reply({
+        return await interaction.reply({
             content: "Non sono in nessun canale",
             ephemeral: true,
         })
@@ -156,5 +156,5 @@ export async function execute(interaction: CommandInteraction) {
             subscriber.unsubscribe()
         }, duration)
     }
-    return interaction.deleteReply()
+    return await interaction.deleteReply()
 }
