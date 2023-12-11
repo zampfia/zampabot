@@ -8,6 +8,7 @@ import * as join from "./voice/join"
 import * as leave from "./voice/leave"
 import * as play from "./voice/play"
 import * as playfile from "./voice/playfile"
+import * as playurl from "./voice/playurl"
 import * as stop from "./voice/stop"
 
 export const commands = {
@@ -21,5 +22,6 @@ export const commands = {
     leave,
     play,
     playfile,
+    playurl,
     stop,
 }
