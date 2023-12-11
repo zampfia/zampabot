@@ -129,7 +129,7 @@ export async function execute(interaction: CommandInteraction) {
             () => {
                 subscriber.unsubscribe()
             },
-            (await getAudioDurationInSeconds(path)) * 0.001
+            (await getAudioDurationInSeconds(path)) * 1000
         )
     }
     return interaction.deleteReply()
