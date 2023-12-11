@@ -2,8 +2,9 @@ import { config } from "./config"
 import { Client } from "discord.js"
 import { deployCommands } from "./registerCommands"
 import { commands } from "./commands"
+import { loadConfig } from "./config/load"
 
-const client = new Client({
+export const client = new Client({
     intents: [
         "Guilds",
         "GuildMembers",
@@ -18,11 +19,18 @@ client.on("ready", async () => {
     console.log("Deploying slash commands...")
     await deployCommands()
     console.log("Deployed slash commands")
+    console.log("Loading configs...")
+    const guilds = Array.from(client.guilds.cache.values())
+    for (let i = 0; i < guilds.length; i++) {
+        await loadConfig(guilds[i])
+    }
+    console.log("Loaded Configs")
     console.log("Ready")
 })
 
-client.on("guildCreate", async () => {
+client.on("guildCreate", async (guild) => {
     await deployCommands()
+    await loadConfig(guild)
 })
 
 client.on("interactionCreate", async (interaction) => {
