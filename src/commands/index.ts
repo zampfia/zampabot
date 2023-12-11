@@ -1,6 +1,7 @@
 import * as burnhome from "./random/burnhome"
 import * as ping from "./random/ping"
 import * as pong from "./random/pong"
+import * as config from "./util/config"
 import * as esilia from "./util/esilia"
 import * as gtts from "./voice/gtts"
 import * as gttsl from "./voice/gttsl"
@@ -15,6 +16,7 @@ export const commands = {
     burnhome,
     ping,
     pong,
+    config,
     esilia,
     gtts,
     gttsl,
