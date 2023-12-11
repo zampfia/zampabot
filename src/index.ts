@@ -40,7 +40,8 @@ client.on("interactionCreate", async (interaction) => {
 
     const { commandName } = interaction
     console.log(
-        `[${interaction.guild?.name}] ${interaction.user.username}: ${commandName}`
+        `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()} [${interaction
+            .guild?.name}] ${interaction.user.username}: ${commandName}`
     )
     if (commands[commandName as keyof typeof commands]) {
         commands[commandName as keyof typeof commands].execute(interaction)
