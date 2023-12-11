@@ -24,7 +24,7 @@ client.on("ready", async () => {
     for (let i = 0; i < guilds.length; i++) {
         await loadConfig(guilds[i])
     }
-    console.log("Loaded Configs")
+    console.log("Loaded configs")
     console.log("Ready")
 })
 
