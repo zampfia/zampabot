@@ -8,6 +8,7 @@ import {
 import { CommandInteraction, SlashCommandBuilder } from "discord.js"
 import getAudioDurationInSeconds from "get-audio-duration"
 import path from "path"
+import fs from "fs"
 
 export const data = new SlashCommandBuilder()
     .setName("play")
@@ -40,9 +41,13 @@ export async function execute(interaction: CommandInteraction) {
             ephemeral: true,
         })
     }
-
     await interaction.deferReply({ ephemeral: true })
     const option = interaction.options.get("audiofile")?.value!
+    if (!fs.existsSync(path.join(__dirname, "files", option + ".opus"))) {
+        return await interaction.editReply(
+            `Impossibile trovare l'audio **${option}**`
+        )
+    }
     let resource
     try {
         resource = createAudioResource(
@@ -50,7 +55,7 @@ export async function execute(interaction: CommandInteraction) {
             { inlineVolume: true }
         )
     } catch (e) {
-        return interaction.editReply(
+        return await interaction.editReply(
             `Impossibile trovare l'audio **${option}**`
         )
     }
