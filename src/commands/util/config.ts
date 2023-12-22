@@ -38,9 +38,15 @@ export async function execute(interaction: CommandInteraction) {
                 autojoin: channel,
             }
             await saveConfig(config)
-            return await interaction.editReply(
-                `Changed **autojoin** to <#${option}>`
-            )
+            if (option != null) {
+                return await interaction.editReply(
+                    `Changed **autojoin** to <#${option}>`
+                )
+            } else {
+                return await interaction.editReply(
+                    `Changed **autojoin** to nothing`
+                )
+            }
         default:
             break
     }
