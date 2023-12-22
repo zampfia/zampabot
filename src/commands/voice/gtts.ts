@@ -111,10 +111,12 @@ export async function execute(interaction: CommandInteraction) {
     const resource = createAudioResource(path, {
         inlineVolume: true,
     })
+    const volume =
+        <number>interaction.options.get("volume")?.value! != null
+            ? <number>interaction.options.get("volume")?.value!
+            : 100
     if (interaction.options.get("volume") != null) {
-        resource.volume?.setVolume(
-            <number>interaction.options.get("volume")?.value! * 0.01
-        )
+        resource.volume?.setVolume(volume * 0.01)
     }
     await interaction.editReply("Creating player and subscribing...")
     const player = createAudioPlayer({
