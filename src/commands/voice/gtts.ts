@@ -65,7 +65,7 @@ export const data = new SlashCommandBuilder()
         option
             .setName("volume")
             .setDescription("Volume del suono")
-            .setMinValue(0)
+            .setMinValue(1)
             .setMaxValue(1000)
             .setRequired(false)
     )
