@@ -44,7 +44,11 @@ export async function execute(interaction: CommandInteraction) {
                     ),
                 ])
             } catch (error) {
-                connection.destroy()
+                try {
+                    connection.destroy()
+                } catch (error) {
+                    // stupid
+                }
             }
         }
     )

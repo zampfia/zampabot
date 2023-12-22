@@ -32,7 +32,11 @@ export async function joinChannel(
                     ),
                 ])
             } catch (error) {
-                connection.destroy()
+                try {
+                    connection.destroy()
+                } catch (error) {
+                    // stupid
+                }
             }
         }
     )
