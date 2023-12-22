@@ -13,6 +13,7 @@
     "author": "gdar463",
     "license": "GPL-3.0",
     "dependencies": {
+        "@discordjs/formatters": "^0.3.3",
         "@discordjs/voice": "^0.16.1",
         "@prisma/client": "^5.7.1",
         "better-npm-audit": "^3.7.3",
