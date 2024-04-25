@@ -4,10 +4,11 @@ import {
     createAudioPlayer,
     createAudioResource,
     getVoiceConnection,
-} from "@discordjs/voice"
-import { CommandInteraction, SlashCommandBuilder } from "discord.js"
-import getAudioDurationInSeconds from "get-audio-duration"
-import path from "path"
+} from "@discordjs/voice";
+import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import getAudioDurationInSeconds from "get-audio-duration";
+import path from "path";
+import fs from "fs";
 
 export const data = new SlashCommandBuilder()
     .setName("play")
@@ -16,7 +17,7 @@ export const data = new SlashCommandBuilder()
         option
             .setName("audiofile")
             .setDescription("Nome del file audio")
-            .setRequired(true)
+            .setRequired(true),
     )
     .addIntegerOption((option) =>
         option
@@ -24,12 +25,12 @@ export const data = new SlashCommandBuilder()
             .setDescription("Volume del suono")
             .setMinValue(0)
             .setMaxValue(1000)
-            .setRequired(false)
+            .setRequired(false),
     )
-    .setDMPermission(false)
+    .setDMPermission(false);
 
 export async function execute(interaction: CommandInteraction) {
-    const connection = getVoiceConnection(interaction.guildId!)
+    const connection = getVoiceConnection(interaction.guildId!);
     if (
         connection === undefined ||
         connection?.state.status === VoiceConnectionStatus.Destroyed ||
@@ -38,43 +39,47 @@ export async function execute(interaction: CommandInteraction) {
         return interaction.reply({
             content: "Non sono in nessun canale",
             ephemeral: true,
-        })
+        });
     }
-
-    await interaction.deferReply({ ephemeral: true })
-    const option = interaction.options.get("audiofile")?.value!
-    let resource
+    await interaction.deferReply({ ephemeral: true });
+    const option = interaction.options.get("audiofile")?.value!;
+    if (!fs.existsSync(path.join(__dirname, "files", option + ".opus"))) {
+        return await interaction.editReply(
+            `Impossibile trovare l'audio **${option}**`,
+        );
+    }
+    let resource;
     try {
         resource = createAudioResource(
             path.join(__dirname, "files", option + ".opus"),
-            { inlineVolume: true }
-        )
+            { inlineVolume: true },
+        );
     } catch (e) {
-        return interaction.editReply(
-            `Impossibile trovare l'audio **${option}**`
-        )
+        return await interaction.editReply(
+            `Impossibile trovare l'audio **${option}**`,
+        );
     }
     if (interaction.options.get("volume") != null) {
         resource.volume?.setVolume(
-            <number>interaction.options.get("volume")?.value! * 0.01
-        )
+            <number>interaction.options.get("volume")?.value! * 0.01,
+        );
     }
     const player = createAudioPlayer({
         behaviors: {
             noSubscriber: NoSubscriberBehavior.Stop,
         },
-    })
-    player.play(resource)
-    const subscriber = connection?.subscribe(player)
+    });
+    player.play(resource);
+    const subscriber = connection?.subscribe(player);
     if (subscriber) {
         setTimeout(
             () => {
-                subscriber.unsubscribe()
+                subscriber.unsubscribe();
             },
             (await getAudioDurationInSeconds(
-                path.join(__dirname, "files", option + ".opus")
-            )) * 1000
-        )
+                path.join(__dirname, "files", option + ".opus"),
+            )) * 1000,
+        );
     }
-    return interaction.deleteReply()
+    return interaction.deleteReply();
 }
