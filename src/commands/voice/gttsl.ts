@@ -4,35 +4,35 @@ import {
     getVoiceConnection,
     NoSubscriberBehavior,
     VoiceConnectionStatus,
-} from "@discordjs/voice"
-import { CommandInteraction, SlashCommandBuilder } from "discord.js"
-import * as gtts from "google-tts-api"
-import { tmpNameSync, dirSync } from "tmp"
-import Ffmpeg, { setFfmpegPath } from "fluent-ffmpeg"
-import ffmpegPath from "ffmpeg-static"
-import fs from "fs"
-import getAudioDurationInSeconds from "get-audio-duration"
+} from "@discordjs/voice";
+import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import * as gtts from "google-tts-api";
+import { tmpNameSync, dirSync } from "tmp";
+import Ffmpeg, { setFfmpegPath } from "fluent-ffmpeg";
+import ffmpegPath from "ffmpeg-static";
+import fs from "fs";
+import getAudioDurationInSeconds from "get-audio-duration";
 
-setFfmpegPath(ffmpegPath!)
+setFfmpegPath(ffmpegPath!);
 const delay = (ms: number) =>
-    new Promise<void>((resolve) => setTimeout(resolve, ms))
+    new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export const data = new SlashCommandBuilder()
     .setName("gttsl")
     .setDescription(
-        "Fa sentire il TTS di google traduttore senza un massimo di caratteri"
+        "Fa sentire il TTS di google traduttore senza un massimo di caratteri",
     )
     .addStringOption((option) =>
         option
             .setName("text")
             .setDescription("Testo da far sentire")
-            .setRequired(true)
+            .setRequired(true),
     )
     .addStringOption((option) =>
         option
             .setName("language")
             .setDescription(
-                "Lingua (usando la seconda colonna di questo https://cloud.google.com/speech/docs/languages)"
+                "Lingua (usando la seconda colonna di questo https://cloud.google.com/speech/docs/languages)",
             )
             .addChoices(
                 { name: "Amarico", value: "am" },
@@ -59,15 +59,15 @@ export const data = new SlashCommandBuilder()
                 { name: "Turco", value: "tr" },
                 { name: "Uzbeko", value: "UZ" },
                 { name: "Vietnamita", value: "vi" },
-                { name: "Zulu", value: "zu" }
+                { name: "Zulu", value: "zu" },
             )
-            .setRequired(false)
+            .setRequired(false),
     )
     .addBooleanOption((option) =>
         option
             .setName("slow")
             .setDescription("Se il testo viene parlato lentamente")
-            .setRequired(false)
+            .setRequired(false),
     )
     .addIntegerOption((option) =>
         option
@@ -75,12 +75,12 @@ export const data = new SlashCommandBuilder()
             .setDescription("Volume del suono")
             .setMinValue(0)
             .setMaxValue(1000)
-            .setRequired(false)
+            .setRequired(false),
     )
-    .setDMPermission(false)
+    .setDMPermission(false);
 
 export async function execute(interaction: CommandInteraction) {
-    const connection = getVoiceConnection(interaction.guildId!)
+    const connection = getVoiceConnection(interaction.guildId!);
     if (
         connection === undefined ||
         connection?.state.status === VoiceConnectionStatus.Destroyed ||
@@ -89,74 +89,74 @@ export async function execute(interaction: CommandInteraction) {
         return await interaction.reply({
             content: "Non sono in nessun canale",
             ephemeral: true,
-        })
+        });
     }
-    await interaction.deferReply({ ephemeral: true })
-    const text = <string>interaction.options.get("text")?.value
-    let language = interaction.options.get("language")?.value
+    await interaction.deferReply({ ephemeral: true });
+    const text = <string>interaction.options.get("text")?.value;
+    let language = interaction.options.get("language")?.value;
     if (language === undefined) {
-        language = "it"
+        language = "it";
     } else {
-        language = <string>language
+        language = <string>language;
     }
-    let slow = interaction.options.get("slow")?.value
+    let slow = interaction.options.get("slow")?.value;
     if (slow === undefined) {
-        slow = false
+        slow = false;
     } else {
-        slow = <boolean>slow
+        slow = <boolean>slow;
     }
-    await interaction.editReply("Getting audio...")
-    let base64s: { shortText: string; base64: string }[] = []
+    await interaction.editReply("Getting audio...");
+    let base64s: { shortText: string; base64: string }[] = [];
     base64s = await gtts.getAllAudioBase64(text, {
         lang: language,
         slow: slow,
-    })
-    await interaction.editReply("Merging audio...")
-    let ffmpeg = Ffmpeg()
+    });
+    await interaction.editReply("Merging audio...");
+    let ffmpeg = Ffmpeg();
     base64s.map((element) => {
-        const path = tmpNameSync()
-        const buffer = Buffer.from(element["base64"], "base64")
-        const uint8arr = new Uint8Array(buffer.byteLength)
+        const path = tmpNameSync();
+        const buffer = Buffer.from(element["base64"], "base64");
+        const uint8arr = new Uint8Array(buffer.byteLength);
 
-        buffer.copy(uint8arr, 0, 0, buffer.byteLength)
-        const v = new DataView(uint8arr.buffer)
-        fs.writeFileSync(path, v)
-        ffmpeg = ffmpeg.addInput(path)
-    })
-    await interaction.editReply("Saving audio...")
-    const tmpPath = tmpNameSync()
-    ffmpeg = ffmpeg.noVideo()
-    let ended = false
+        buffer.copy(uint8arr, 0, 0, buffer.byteLength);
+        const v = new DataView(uint8arr.buffer);
+        fs.writeFileSync(path, v);
+        ffmpeg = ffmpeg.addInput(path);
+    });
+    await interaction.editReply("Saving audio...");
+    const tmpPath = tmpNameSync();
+    ffmpeg = ffmpeg.noVideo();
+    let ended = false;
     ffmpeg = ffmpeg.on("end", () => {
-        ended = true
-    })
+        ended = true;
+    });
     ffmpeg = ffmpeg
         .mergeToFile(tmpPath, dirSync().name)
-        .withOutputFormat("opus")
+        .withOutputFormat("opus");
     while (!ended) {
-        await delay(100)
+        await delay(100);
     }
-    const duration = (await getAudioDurationInSeconds(tmpPath)) * 1000
+    const duration = (await getAudioDurationInSeconds(tmpPath)) * 1000;
     const resource = createAudioResource(tmpPath, {
         inlineVolume: true,
-    })
+    });
     if (interaction.options.get("volume") != null) {
         resource.volume?.setVolume(
-            <number>interaction.options.get("volume")?.value! * 0.01
-        )
+            <number>interaction.options.get("volume")?.value! * 0.01,
+        );
     }
-    await interaction.editReply("Creating player and subscribing...")
+    await interaction.editReply("Creating player and subscribing...");
     const player = createAudioPlayer({
         behaviors: {
             noSubscriber: NoSubscriberBehavior.Stop,
         },
-    })
-    player.play(resource)
-    const subscriber = connection?.subscribe(player)
+    });
+    player.play(resource);
+    const subscriber = connection?.subscribe(player);
     if (subscriber) {
         setTimeout(() => {
-            subscriber.unsubscribe()
-        }, duration)
+            subscriber.unsubscribe();
+        }, duration);
     }
-    return await interaction.deleteReply()
+    return await interaction.deleteReply();
 }

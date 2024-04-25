@@ -1,18 +1,18 @@
-import { VoiceConnectionStatus, getVoiceConnection } from "@discordjs/voice"
+import { VoiceConnectionStatus, getVoiceConnection } from "@discordjs/voice";
 import {
     CommandInteraction,
     PermissionFlagsBits,
     SlashCommandBuilder,
-} from "discord.js"
+} from "discord.js";
 
 export const data = new SlashCommandBuilder()
     .setName("leave")
     .setDescription("Lascia il canale corrente")
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-    .setDMPermission(false)
+    .setDMPermission(false);
 
 export async function execute(interaction: CommandInteraction) {
-    const connection = getVoiceConnection(interaction.guildId!)
+    const connection = getVoiceConnection(interaction.guildId!);
     if (
         connection === undefined ||
         connection?.state.status === VoiceConnectionStatus.Destroyed ||
@@ -21,11 +21,11 @@ export async function execute(interaction: CommandInteraction) {
         return interaction.reply({
             content: "Non sono in nessun canale",
             ephemeral: true,
-        })
+        });
     }
-    connection?.destroy()
+    connection?.destroy();
     return interaction.reply({
         content: "Uscito dal canale corrente",
         ephemeral: true,
-    })
+    });
 }

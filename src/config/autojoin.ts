@@ -2,19 +2,19 @@ import {
     joinVoiceChannel,
     VoiceConnectionStatus,
     entersState,
-} from "@discordjs/voice"
-import { InternalDiscordGatewayAdapterCreator } from "discord.js"
+} from "@discordjs/voice";
+import { InternalDiscordGatewayAdapterCreator } from "discord.js";
 
 export async function joinChannel(
     channelId: string,
     serverId: string,
-    voiceAdapterCreator: InternalDiscordGatewayAdapterCreator
+    voiceAdapterCreator: InternalDiscordGatewayAdapterCreator,
 ) {
     const connection = joinVoiceChannel({
         channelId: channelId,
         guildId: serverId,
         adapterCreator: voiceAdapterCreator,
-    })
+    });
     connection.on(
         VoiceConnectionStatus.Disconnected,
         async (oldState, newState) => {
@@ -23,21 +23,21 @@ export async function joinChannel(
                     entersState(
                         connection,
                         VoiceConnectionStatus.Signalling,
-                        5_000
+                        5_000,
                     ),
                     entersState(
                         connection,
                         VoiceConnectionStatus.Connecting,
-                        5_000
+                        5_000,
                     ),
-                ])
+                ]);
             } catch (error) {
                 try {
-                    connection.destroy()
+                    connection.destroy();
                 } catch (error) {
                     // stupid
                 }
             }
-        }
-    )
+        },
+    );
 }

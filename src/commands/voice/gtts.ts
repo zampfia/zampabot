@@ -5,12 +5,12 @@ import {
     NoSubscriberBehavior,
     StreamType,
     VoiceConnectionStatus,
-} from "@discordjs/voice"
-import { CommandInteraction, SlashCommandBuilder } from "discord.js"
-import * as gtts from "google-tts-api"
-import fs from "fs/promises"
-import { tmpNameSync } from "tmp"
-import getAudioDurationInSeconds from "get-audio-duration"
+} from "@discordjs/voice";
+import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import * as gtts from "google-tts-api";
+import fs from "fs/promises";
+import { tmpNameSync } from "tmp";
+import getAudioDurationInSeconds from "get-audio-duration";
 
 export const data = new SlashCommandBuilder()
     .setName("gtts")
@@ -20,13 +20,13 @@ export const data = new SlashCommandBuilder()
             .setName("text")
             .setDescription("Testo da far sentire")
             .setMaxLength(200)
-            .setRequired(true)
+            .setRequired(true),
     )
     .addStringOption((option) =>
         option
             .setName("language")
             .setDescription(
-                "Lingua (usando la seconda colonna di questo https://cloud.google.com/speech/docs/languages)"
+                "Lingua (usando la seconda colonna di questo https://cloud.google.com/speech/docs/languages)",
             )
             .addChoices(
                 { name: "Amarico", value: "am" },
@@ -52,15 +52,15 @@ export const data = new SlashCommandBuilder()
                 { name: "Thailandese", value: "th" },
                 { name: "Turco", value: "tr" },
                 { name: "Uzbeko", value: "UZ" },
-                { name: "Vietnamita", value: "vi" }
+                { name: "Vietnamita", value: "vi" },
             )
-            .setRequired(false)
+            .setRequired(false),
     )
     .addBooleanOption((option) =>
         option
             .setName("slow")
             .setDescription("Se il testo viene parlato lentamente")
-            .setRequired(false)
+            .setRequired(false),
     )
     .addIntegerOption((option) =>
         option
@@ -68,12 +68,12 @@ export const data = new SlashCommandBuilder()
             .setDescription("Volume del suono")
             .setMinValue(1)
             .setMaxValue(1000)
-            .setRequired(false)
+            .setRequired(false),
     )
-    .setDMPermission(false)
+    .setDMPermission(false);
 
 export async function execute(interaction: CommandInteraction) {
-    const connection = getVoiceConnection(interaction.guildId!)
+    const connection = getVoiceConnection(interaction.guildId!);
     if (
         connection === undefined ||
         connection?.state.status === VoiceConnectionStatus.Destroyed ||
@@ -82,58 +82,58 @@ export async function execute(interaction: CommandInteraction) {
         return interaction.reply({
             content: "Non sono in nessun canale",
             ephemeral: true,
-        })
+        });
     }
-    await interaction.deferReply({ ephemeral: true })
-    const text = <string>interaction.options.get("text")?.value
-    let language = interaction.options.get("language")?.value
+    await interaction.deferReply({ ephemeral: true });
+    const text = <string>interaction.options.get("text")?.value;
+    let language = interaction.options.get("language")?.value;
     if (language === undefined) {
-        language = "it"
+        language = "it";
     } else {
-        language = <string>language
+        language = <string>language;
     }
-    let slow = interaction.options.get("slow")?.value
+    let slow = interaction.options.get("slow")?.value;
     if (slow === undefined) {
-        slow = false
+        slow = false;
     } else {
-        slow = <boolean>slow
+        slow = <boolean>slow;
     }
-    await interaction.editReply("Getting audio...")
+    await interaction.editReply("Getting audio...");
     const buffer = Buffer.from(
         await gtts.getAudioBase64(text, {
             lang: language,
             slow: slow,
         }),
-        "base64"
-    )
-    const path = tmpNameSync()
-    await interaction.editReply("Saving audio...")
-    await fs.writeFile(path, buffer)
+        "base64",
+    );
+    const path = tmpNameSync();
+    await interaction.editReply("Saving audio...");
+    await fs.writeFile(path, buffer);
     const resource = createAudioResource(path, {
         inlineVolume: true,
-    })
+    });
     const volume =
         <number>interaction.options.get("volume")?.value! != null
             ? <number>interaction.options.get("volume")?.value!
-            : 100
+            : 100;
     if (interaction.options.get("volume") != null) {
-        resource.volume?.setVolume(volume * 0.01)
+        resource.volume?.setVolume(volume * 0.01);
     }
-    await interaction.editReply("Creating player and subscribing...")
+    await interaction.editReply("Creating player and subscribing...");
     const player = createAudioPlayer({
         behaviors: {
             noSubscriber: NoSubscriberBehavior.Stop,
         },
-    })
-    player.play(resource)
-    const subscriber = connection?.subscribe(player)
+    });
+    player.play(resource);
+    const subscriber = connection?.subscribe(player);
     if (subscriber) {
         setTimeout(
             () => {
-                subscriber.unsubscribe()
+                subscriber.unsubscribe();
             },
-            (await getAudioDurationInSeconds(path)) * 1000
-        )
+            (await getAudioDurationInSeconds(path)) * 1000,
+        );
     }
-    return interaction.deleteReply()
+    return interaction.deleteReply();
 }

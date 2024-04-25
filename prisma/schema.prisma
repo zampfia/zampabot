@@ -10,8 +10,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Compleanni {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  server    Server @relation(fields: [serverId], references: [discordId])
+  serverId  String @unique
+  channelId String
+  dates     Json[]
+}
+
+model Lotteria {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  server      Server @relation(fields: [serverId], references: [discordId])
+  serverId    String @unique
+  players     Json[]
+  numbers     Json[]
+  extractions Json[]
+}
+
 model Server {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  discordId String   @unique
-  autojoin  String?
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  discordId  String      @unique
+  autojoin   String?
+  lotteria   Lotteria?
+  Compleanni Compleanni?
 }

@@ -2,9 +2,9 @@ import {
     CommandInteraction,
     PermissionFlagsBits,
     SlashCommandBuilder,
-} from "discord.js"
-import { Server } from "@prisma/client"
-import { saveConfig } from "../../config/save"
+} from "discord.js";
+import { Server } from "@prisma/client";
+import { saveConfig } from "../../config/save";
 
 export const data = new SlashCommandBuilder()
     .setName("config")
@@ -17,37 +17,37 @@ export const data = new SlashCommandBuilder()
                 option
                     .setName("channel")
                     .setDescription("Channel to autojoin")
-                    .setRequired(false)
-            )
+                    .setRequired(false),
+            ),
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-    .setDMPermission(false)
+    .setDMPermission(false);
 
 export async function execute(interaction: CommandInteraction) {
-    await interaction.deferReply({ ephemeral: true })
-    const guildId = interaction.guildId!
+    await interaction.deferReply({ ephemeral: true });
+    const guildId = interaction.guildId!;
     // @ts-expect-error
-    const subcommand: string = interaction.options.getSubcommand()
+    const subcommand: string = interaction.options.getSubcommand();
     switch (subcommand) {
         case "autojoin":
-            const option = interaction.options.get("channel")?.channel?.id
-            const channel = option != null ? option : ""
+            const option = interaction.options.get("channel")?.channel?.id;
+            const channel = option != null ? option : "";
             const config: Server = {
                 id: "",
                 discordId: guildId,
                 autojoin: channel,
-            }
-            await saveConfig(config)
+            };
+            await saveConfig(config);
             if (option != null) {
                 return await interaction.editReply(
-                    `Changed **autojoin** to <#${option}>`
-                )
+                    `Changed **autojoin** to <#${option}>`,
+                );
             } else {
                 return await interaction.editReply(
-                    `Changed **autojoin** to nothing`
-                )
+                    `Changed **autojoin** to nothing`,
+                );
             }
         default:
-            break
+            break;
     }
 }

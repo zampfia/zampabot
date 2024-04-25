@@ -4,8 +4,8 @@ import {
     REST,
     Routes,
     PermissionFlagsBits,
-} from "discord.js"
-import { config } from "../../config"
+} from "discord.js";
+import { config } from "../../config";
 
 export const data = new SlashCommandBuilder()
     .setName("esilia")
@@ -14,23 +14,23 @@ export const data = new SlashCommandBuilder()
         option
             .setName("role")
             .setDescription("Il ruolo da esiliare")
-            .setRequired(true)
+            .setRequired(true),
     )
     .addChannelOption((option) =>
         option
             .setName("channel")
             .setDescription("Il canale da cui esiliarlo")
-            .setRequired(true)
+            .setRequired(true),
     )
     .setDefaultMemberPermissions(
-        PermissionFlagsBits.ManageChannels | PermissionFlagsBits.ManageRoles
+        PermissionFlagsBits.ManageChannels | PermissionFlagsBits.ManageRoles,
     )
-    .setDMPermission(false)
+    .setDMPermission(false);
 
 export async function execute(interaction: CommandInteraction) {
-    await interaction.deferReply()
-    const roleId = interaction.options.get("role")?.role?.id!
-    const channelId = interaction.options.get("channel")?.channel?.id!
+    await interaction.deferReply();
+    const roleId = interaction.options.get("role")?.role?.id!;
+    const channelId = interaction.options.get("channel")?.channel?.id!;
     await new REST()
         .setToken(config.DISCORD_TOKEN)
         .put(Routes.channelPermission(channelId, roleId), {
@@ -43,8 +43,8 @@ export async function execute(interaction: CommandInteraction) {
                     PermissionFlagsBits.CreatePublicThreads
                 ).toString(),
             },
-        })
+        });
     return interaction.editReply(
-        `In teoria <@&${roleId}> sono fuori dal canale ⁠<#${channelId}>`
-    )
+        `In teoria <@&${roleId}> sono fuori dal canale ⁠<#${channelId}>`,
+    );
 }
