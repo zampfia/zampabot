@@ -1,52 +1,52 @@
 {
-    "name": "zampabot",
-    "version": "0.1.0",
-    "description": "",
-    "main": "src/index.ts",
-    "scripts": {
-        "dev": "tsx watch src/index.ts",
-        "start": "node dist/index.js",
-        "build": "tsup src/index.ts --minify",
-        "prepare": "husky install",
-        "install": "better-npm-audit audit"
-    },
-    "author": "gdar463",
-    "license": "GPL-3.0",
-    "dependencies": {
-        "@discordjs/formatters": "^0.3.3",
-        "@discordjs/voice": "^0.16.1",
-        "@prisma/client": "^5.13.0",
-        "@types/text-table": "^0.2.5",
-        "better-npm-audit": "^3.7.3",
-        "discord.js": "^14.14.1",
-        "dotenv": "^16.4.5",
-        "ffmpeg-static": "^5.2.0",
-        "fluent-ffmpeg": "^2.1.2",
-        "get-audio-duration": "^4.0.1",
-        "google-tts-api": "^2.0.2",
-        "libsodium": "^0.7.13",
-        "libsodium-wrappers": "^0.7.13",
-        "opusscript": "^0.1.1",
-        "table": "^6.8.2",
-        "text-table": "^0.2.0",
-        "tmp": "^0.2.3"
-    },
-    "devDependencies": {
-        "@types/fluent-ffmpeg": "^2.1.24",
-        "@types/tmp": "^0.2.6",
-        "eslint": "^9.1.1",
-        "eslint-config-prettier": "^9.0.0",
-        "eslint-plugin-prettier": "^5.0.1",
-        "husky": "^9.0.11",
-        "lint-staged": "^15.1.0",
-        "prettier": "^3.1.0",
-        "prettier-eslint": "^16.1.2",
-        "prisma": "^5.13.0",
-        "tsup": "^8.0.2",
-        "tsx": "^4.7.2",
-        "typescript": "^5.4.5"
-    },
-    "lint-staged": {
-        "**/*": "prettier --write --ignore-unknown"
-    }
+	"name": "zampabot",
+	"version": "0.1.0",
+	"description": "",
+	"main": "src/index.ts",
+	"scripts": {
+		"dev": "tsx watch src/index.ts",
+		"start": "node dist/index.js",
+		"build": "tsup src/index.ts --minify",
+		"prepare": "husky install",
+		"install": "better-npm-audit audit"
+	},
+	"author": "gdar463",
+	"license": "GPL-3.0",
+	"dependencies": {
+		"@discordjs/formatters": "^0.3.3",
+		"@discordjs/voice": "^0.16.1",
+		"@prisma/client": "^5.13.0",
+		"@types/text-table": "^0.2.5",
+		"better-npm-audit": "^3.7.3",
+		"discord.js": "^14.14.1",
+		"dotenv": "^16.4.5",
+		"ffmpeg-static": "^5.2.0",
+		"fluent-ffmpeg": "^2.1.2",
+		"get-audio-duration": "^4.0.1",
+		"google-tts-api": "^2.0.2",
+		"libsodium": "^0.7.13",
+		"libsodium-wrappers": "^0.7.13",
+		"opusscript": "^0.1.1",
+		"table": "^6.8.2",
+		"text-table": "^0.2.0",
+		"tmp": "^0.2.3"
+	},
+	"devDependencies": {
+		"@types/fluent-ffmpeg": "^2.1.24",
+		"@types/tmp": "^0.2.6",
+		"eslint": "^9.1.1",
+		"eslint-config-prettier": "^9.0.0",
+		"eslint-plugin-prettier": "^5.0.1",
+		"husky": "^9.0.11",
+		"lint-staged": "^15.1.0",
+		"prettier": "^3.1.0",
+		"prettier-eslint": "^16.1.2",
+		"prisma": "^5.13.0",
+		"tsup": "^8.0.2",
+		"tsx": "^4.7.2",
+		"typescript": "^5.4.5"
+	},
+	"lint-staged": {
+		"**/*": "prettier --write --ignore-unknown"
+	}
 }
