@@ -9,7 +9,7 @@ export default async function inviaDB(interaction: CommandInteraction) {
     const num3 = <number>interaction.options.get("num4")?.value;
     const num4 = <number>interaction.options.get("num5")?.value;
     const user = interaction.options.getUser("user")?.id;
-    const toDB = await prisma.lotteria.update({
+    await prisma.lotteria.update({
         where: {
             serverId: interaction.guildId!,
         },
@@ -27,4 +27,3 @@ export default async function inviaDB(interaction: CommandInteraction) {
         `Inviato i numeri [${num0}, ${num1}, ${num2}, ${num3}, ${num4}] per ${user != null ? userMention(user) : "**" + name + "**"} a DB`,
     );
 }
-

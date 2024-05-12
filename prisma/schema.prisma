@@ -6,12 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Compleanni {
-  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  id        Int    @id @default(autoincrement())
   server    Server @relation(fields: [serverId], references: [discordId])
   serverId  String @unique
   channelId String
@@ -19,7 +19,7 @@ model Compleanni {
 }
 
 model Lotteria {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  id          Int    @id @default(autoincrement())
   server      Server @relation(fields: [serverId], references: [discordId])
   serverId    String @unique
   players     Json[]
@@ -27,10 +27,18 @@ model Lotteria {
   extractions Json[]
 }
 
+model Queue {
+  id       Int    @id @default(autoincrement())
+  server   Server @relation(fields: [serverId], references: [discordId])
+  serverId String @unique
+  queue    Json[]
+}
+
 model Server {
-  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  id         Int         @id @default(autoincrement())
   discordId  String      @unique
   autojoin   String?
   lotteria   Lotteria?
   Compleanni Compleanni?
+  Queue      Queue?
 }

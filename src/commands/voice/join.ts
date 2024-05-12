@@ -29,7 +29,7 @@ export async function execute(interaction: CommandInteraction) {
     });
     connection.on(
         VoiceConnectionStatus.Disconnected,
-        async (oldState, newState) => {
+        async (_oldState, _newState) => {
             try {
                 await Promise.race([
                     entersState(

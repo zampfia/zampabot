@@ -132,3 +132,7 @@ dist
 *.opus
 
 *scratch*
+
+bun.lockb
+
+prisma/migrations/

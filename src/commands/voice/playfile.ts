@@ -1,15 +1,17 @@
 import {
-    NoSubscriberBehavior,
+    // NoSubscriberBehavior,
     VoiceConnectionStatus,
-    createAudioPlayer,
-    createAudioResource,
+    // createAudioPlayer,
+    // createAudioResource,
     getVoiceConnection,
 } from "@discordjs/voice";
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
-import getAudioDurationInSeconds from "get-audio-duration";
+// import getAudioDurationInSeconds from "get-audio-duration";
 import fs from "fs";
 import { tmpNameSync } from "tmp";
 import https from "https";
+import { addToQueue } from "../../voice/queue";
+import { Song } from "../../voice/song";
 
 const delay = (ms: number) =>
     new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -76,24 +78,41 @@ export async function execute(interaction: CommandInteraction) {
     while (!finished) {
         await delay(100);
     }
-    const duration = (await getAudioDurationInSeconds(filePath)) * 1000;
-    let resource = createAudioResource(filePath, { inlineVolume: true });
+
+    let volume = 100;
     if (interaction.options.get("volume") != null) {
-        resource.volume?.setVolume(
-            <number>interaction.options.get("volume")?.value! * 0.01,
-        );
+        volume = <number>interaction.options.get("volume")?.value!;
     }
-    const player = createAudioPlayer({
-        behaviors: {
-            noSubscriber: NoSubscriberBehavior.Stop,
-        },
-    });
-    player.play(resource);
-    const subscriber = connection?.subscribe(player);
-    if (subscriber) {
-        setTimeout(() => {
-            subscriber.unsubscribe();
-        }, duration);
-    }
-    return interaction.deleteReply();
+
+    const song: Song = {
+        filename: filePath,
+        songName: "/playfile " + option.name,
+        serverId: interaction.guildId!,
+        user: interaction.user.id,
+        username: interaction.user.username,
+        time: new Date(interaction.createdTimestamp),
+        volume: volume,
+    };
+    addToQueue(song);
+
+    // const duration = (await getAudioDurationInSeconds(filePath)) * 1000;
+    // let resource = createAudioResource(filePath, { inlineVolume: true });
+    // if (interaction.options.get("volume") != null) {
+    //     resource.volume?.setVolume(
+    //         <number>interaction.options.get("volume")?.value! * 0.01,
+    //     );
+    // }
+    // const player = createAudioPlayer({
+    //     behaviors: {
+    //         noSubscriber: NoSubscriberBehavior.Stop,
+    //     },
+    // });
+    // player.play(resource);
+    // const subscriber = connection?.subscribe(player);
+    // if (subscriber) {
+    //     setTimeout(() => {
+    //         subscriber.unsubscribe();
+    //     }, duration);
+    // }
+    return interaction.editReply("Aggiunto in coda");
 }

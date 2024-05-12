@@ -1,25 +1,61 @@
 import {
-    createAudioPlayer,
-    createAudioResource,
+    // createAudioPlayer,
+    // createAudioResource,
     getVoiceConnection,
-    NoSubscriberBehavior,
-    StreamType,
+    // NoSubscriberBehavior,
     VoiceConnectionStatus,
 } from "@discordjs/voice";
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 import * as gtts from "google-tts-api";
-import fs from "fs/promises";
-import { tmpNameSync } from "tmp";
-import getAudioDurationInSeconds from "get-audio-duration";
+import { tmpNameSync, dirSync } from "tmp";
+import Ffmpeg, { setFfmpegPath } from "fluent-ffmpeg";
+import ffmpegPath from "ffmpeg-static";
+import fs from "fs";
+// import getAudioDurationInSeconds from "get-audio-duration";
+import { Song } from "../../voice/song";
+import { addToQueue } from "../../voice/queue";
+
+setFfmpegPath(ffmpegPath!);
+const delay = (ms: number) =>
+    new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+const languages = [
+    { name: "Aramaico", value: "am" },
+    { name: "Arabo", value: "ar" },
+    { name: "Bosniaco", value: "bs" },
+    { name: "Bulgaro", value: "bg" },
+    { name: "Cinese, mandarino", value: "zh" },
+    { name: "Olandese", value: "nl" },
+    { name: "Inglese", value: "en" },
+    { name: "Estone", value: "et" },
+    { name: "Finlandese", value: "fi" },
+    { name: "Ungherese", value: "hu" },
+    { name: "Islandese", value: "is" },
+    { name: "Italiano", value: "it" },
+    { name: "Giapponese", value: "ja" },
+    { name: "Persiano", value: "fa" },
+    { name: "Rumeno", value: "ro" },
+    { name: "Russo", value: "ru" },
+    { name: "Spagnolo", value: "es" },
+    { name: "Sundanese", value: "su" },
+    { name: "Swahili", value: "sw" },
+    { name: "Svedese", value: "sv" },
+    { name: "Thailandese", value: "th" },
+    { name: "Turco", value: "tr" },
+    { name: "Uzbeko", value: "UZ" },
+    { name: "Vietnamita", value: "vi" },
+    { name: "Zulu", value: "zu" },
+];
 
 export const data = new SlashCommandBuilder()
     .setName("gtts")
-    .setDescription("Fa sentire il TTS di google traduttore")
+    .setDescription(
+        "Fa sentire il TTS di google traduttore senza un massimo di caratteri",
+    )
     .addStringOption((option) =>
         option
             .setName("text")
             .setDescription("Testo da far sentire")
-            .setMaxLength(200)
             .setRequired(true),
     )
     .addStringOption((option) =>
@@ -29,30 +65,31 @@ export const data = new SlashCommandBuilder()
                 "Lingua (usando la seconda colonna di questo https://cloud.google.com/speech/docs/languages)",
             )
             .addChoices(
-                { name: "Amarico", value: "am" },
+                { name: "Aramaico", value: "am" },
                 { name: "Arabo", value: "ar" },
                 { name: "Bosniaco", value: "bs" },
                 { name: "Bulgaro", value: "bg" },
                 { name: "Cinese, mandarino", value: "zh" },
+                { name: "Olandese", value: "nl" },
+                { name: "Inglese", value: "en" },
                 { name: "Estone", value: "et" },
                 { name: "Finlandese", value: "fi" },
                 { name: "Ungherese", value: "hu" },
-                { name: "Inglese", value: "en" },
                 { name: "Islandese", value: "is" },
                 { name: "Italiano", value: "it" },
                 { name: "Giapponese", value: "ja" },
-                { name: "Olandese", value: "nl" },
+                { name: "Persiano", value: "fa" },
                 { name: "Rumeno", value: "ro" },
                 { name: "Russo", value: "ru" },
                 { name: "Spagnolo", value: "es" },
                 { name: "Sundanese", value: "su" },
                 { name: "Swahili", value: "sw" },
                 { name: "Svedese", value: "sv" },
-                { name: "Tedesco", value: "de" },
                 { name: "Thailandese", value: "th" },
                 { name: "Turco", value: "tr" },
                 { name: "Uzbeko", value: "UZ" },
                 { name: "Vietnamita", value: "vi" },
+                { name: "Zulu", value: "zu" },
             )
             .setRequired(false),
     )
@@ -66,7 +103,7 @@ export const data = new SlashCommandBuilder()
         option
             .setName("volume")
             .setDescription("Volume del suono")
-            .setMinValue(1)
+            .setMinValue(0)
             .setMaxValue(1000)
             .setRequired(false),
     )
@@ -79,7 +116,7 @@ export async function execute(interaction: CommandInteraction) {
         connection?.state.status === VoiceConnectionStatus.Destroyed ||
         connection?.state.status === VoiceConnectionStatus.Disconnected
     ) {
-        return interaction.reply({
+        return await interaction.reply({
             content: "Non sono in nessun canale",
             ephemeral: true,
         });
@@ -92,6 +129,14 @@ export async function execute(interaction: CommandInteraction) {
     } else {
         language = <string>language;
     }
+
+    const languageFull = languages.find((value) => {
+        if (value.value == language) {
+            return value;
+        }
+        return undefined;
+    });
+
     let slow = interaction.options.get("slow")?.value;
     if (slow === undefined) {
         slow = false;
@@ -99,41 +144,70 @@ export async function execute(interaction: CommandInteraction) {
         slow = <boolean>slow;
     }
     await interaction.editReply("Getting audio...");
-    const buffer = Buffer.from(
-        await gtts.getAudioBase64(text, {
-            lang: language,
-            slow: slow,
-        }),
-        "base64",
-    );
-    const path = tmpNameSync();
+    let base64s: { shortText: string; base64: string }[] = [];
+    base64s = await gtts.getAllAudioBase64(text, {
+        lang: language,
+        slow: slow,
+    });
+    await interaction.editReply("Merging audio...");
+    let ffmpeg = Ffmpeg();
+    base64s.map((element) => {
+        const path = tmpNameSync();
+        const buffer = Buffer.from(element["base64"], "base64");
+        const uint8arr = new Uint8Array(buffer.byteLength);
+
+        buffer.copy(uint8arr, 0, 0, buffer.byteLength);
+        const v = new DataView(uint8arr.buffer);
+        fs.writeFileSync(path, v);
+        ffmpeg = ffmpeg.addInput(path);
+    });
     await interaction.editReply("Saving audio...");
-    await fs.writeFile(path, buffer);
-    const resource = createAudioResource(path, {
-        inlineVolume: true,
+    const tmpPath = tmpNameSync();
+    ffmpeg = ffmpeg.noVideo();
+    let ended = false;
+    ffmpeg = ffmpeg.on("end", () => {
+        ended = true;
     });
-    const volume =
-        <number>interaction.options.get("volume")?.value! != null
-            ? <number>interaction.options.get("volume")?.value!
-            : 100;
-    if (interaction.options.get("volume") != null) {
-        resource.volume?.setVolume(volume * 0.01);
+    ffmpeg = ffmpeg
+        .mergeToFile(tmpPath, dirSync().name)
+        .withOutputFormat("opus");
+    while (!ended) {
+        await delay(100);
     }
-    await interaction.editReply("Creating player and subscribing...");
-    const player = createAudioPlayer({
-        behaviors: {
-            noSubscriber: NoSubscriberBehavior.Stop,
-        },
-    });
-    player.play(resource);
-    const subscriber = connection?.subscribe(player);
-    if (subscriber) {
-        setTimeout(
-            () => {
-                subscriber.unsubscribe();
-            },
-            (await getAudioDurationInSeconds(path)) * 1000,
-        );
-    }
-    return interaction.deleteReply();
+
+    const song: Song = {
+        filename: tmpPath,
+        songName: 'TTS in "' + languageFull + '"',
+        serverId: interaction.guildId!,
+        user: interaction.user.id,
+        username: interaction.user.username,
+        time: new Date(interaction.createdTimestamp),
+    };
+    addToQueue(song);
+
+    // const duration = (await getAudioDurationInSeconds(tmpPath)) * 1000;
+    // const resource = createAudioResource(tmpPath, {
+    //     inlineVolume: true,
+    // });
+    // if (interaction.options.get("volume") != null) {
+    //     resource.volume?.setVolume(
+    //         <number>interaction.options.get("volume")?.value! * 0.01,
+    //     );
+    // }
+
+    // await interaction.editReply("Creating player and subscribing...");
+    // const player = createAudioPlayer({
+    //     behaviors: {
+    //         noSubscriber: NoSubscriberBehavior.Stop,
+    //     },
+    // });
+    // player.play(resource);
+    // const subscriber = connection?.subscribe(player);
+    // if (subscriber) {
+    //     setTimeout(() => {
+    //         subscriber.unsubscribe();
+    //     }, duration);
+    // }
+
+    return await interaction.editReply("Aggiunto in coda");
 }

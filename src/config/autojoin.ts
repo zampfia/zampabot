@@ -15,9 +15,10 @@ export async function joinChannel(
         guildId: serverId,
         adapterCreator: voiceAdapterCreator,
     });
+
     connection.on(
         VoiceConnectionStatus.Disconnected,
-        async (oldState, newState) => {
+        async (_oldState, _newState) => {
             try {
                 await Promise.race([
                     entersState(
