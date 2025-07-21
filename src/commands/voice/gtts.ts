@@ -104,7 +104,7 @@ export const data = new SlashCommandBuilder()
             .setName("volume")
             .setDescription("Volume del suono")
             .setMinValue(0)
-            .setMaxValue(1000)
+            .setMaxValue(200)
             .setRequired(false),
     )
     .setDMPermission(false);
@@ -135,7 +135,7 @@ export async function execute(interaction: CommandInteraction) {
             return value;
         }
         return undefined;
-    });
+    })!.name;
 
     let slow = interaction.options.get("slow")?.value;
     if (slow === undefined) {
@@ -175,6 +175,11 @@ export async function execute(interaction: CommandInteraction) {
         await delay(100);
     }
 
+    let volume = 100;
+    if (interaction.options.get("volume") != null) {
+        volume = <number>interaction.options.get("volume")?.value!;
+    }
+
     const song: Song = {
         filename: tmpPath,
         songName: 'TTS in "' + languageFull + '"',
@@ -182,6 +187,7 @@ export async function execute(interaction: CommandInteraction) {
         user: interaction.user.id,
         username: interaction.user.username,
         time: new Date(interaction.createdTimestamp),
+        volume: volume,
     };
     addToQueue(song);
 

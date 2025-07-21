@@ -32,7 +32,7 @@ export const data = new SlashCommandBuilder()
             .setName("volume")
             .setDescription("Volume del suono")
             .setMinValue(0)
-            .setMaxValue(1000)
+            .setMaxValue(200)
             .setRequired(false),
     )
     // .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)

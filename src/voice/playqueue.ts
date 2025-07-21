@@ -6,10 +6,12 @@ import {
 } from "@discordjs/voice";
 import { getQueue, skipNext } from "./queue";
 import getAudioDurationInSeconds from "get-audio-duration";
+import { logger } from "../log";
 
 let playing = false;
 
 export async function playQueue(serverId: string) {
+    logger.debug("playing before: " + playing);
     if (!playing) {
         const connection = getVoiceConnection(serverId);
         if (connection != undefined) {
@@ -32,15 +34,23 @@ export async function playQueue(serverId: string) {
                     playing = true;
                     skipNext(serverId);
                     setTimeout(() => {
-                        playing = false;
+                        subscriber.unsubscribe();
+                        if (!getPlaying()) {
+                            playing = false;
+                        }
                         playQueue(serverId);
                     }, duration);
                 }
             }
         }
     }
+    logger.debug("playing after: " + playing);
 }
 
 export function setPlaying(bool: boolean) {
     playing = bool;
+}
+
+export function getPlaying(): boolean {
+    return playing;
 }

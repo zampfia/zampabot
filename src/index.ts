@@ -3,6 +3,7 @@ import { Client } from "discord.js";
 import { deployCommands } from "./registerCommands";
 import { commands } from "./commands";
 import { loadConfig } from "./config/load";
+import { logger } from "./log";
 
 export const client = new Client({
     intents: [
@@ -16,17 +17,17 @@ export const client = new Client({
 });
 
 client.on("ready", async () => {
-    console.log("Setting up...");
-    console.log("Deploying slash commands...");
+    logger.info("Setting Up...");
+    logger.debug("Deploying slash commands...");
     await deployCommands();
-    console.log("Deployed slash commands");
-    console.log("Loading configs...");
+    logger.info("Deployed slash commands");
+    logger.debug("Loading configs...");
     const guilds = Array.from(client.guilds.cache.values());
     for (let i = 0; i < guilds.length; i++) {
         await loadConfig(guilds[i]);
     }
-    console.log("Loaded configs");
-    console.log("Ready");
+    logger.info("Loaded configs");
+    logger.info("Ready");
 });
 
 client.on("guildCreate", async (guild) => {
@@ -38,13 +39,13 @@ client.on("interactionCreate", async (interaction) => {
     if (!interaction.isChatInputCommand()) {
         return;
     }
-
     const { commandName } = interaction;
-    console.log(
-        `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()} [${
-            interaction.guild?.name
-        }] ${interaction.user.username}: ${commandName}`,
+    logger.info(
+        `[${interaction.guild?.name}] ${interaction.user.username}: ${interaction.commandName}`,
     );
+    interaction.command?.options.forEach((value) => {
+        logger.info(`${value.name}: ${value.type} = ${value.description}`);
+    });
     if (commands[commandName as keyof typeof commands]) {
         commands[commandName as keyof typeof commands].execute(interaction);
     }
